@@ -1,7 +1,6 @@
 - 👋 Hi, I’m @mausiku
 - 👀 I’m interested in full-stack development.
-- 🌱 I’m currently learning front-end development.
-- 💞️ I’m looking to collaborate on Javascript projects.
+- 🌱 I’m currently learning Data Science & Machine Learning.
 - 📫 How to reach me: xtremetechnologies.cc@gmail.com
 
 <!---
