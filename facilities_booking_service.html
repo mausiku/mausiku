@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Common Service — Facilities Booking</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#1a1a2e;--ink2:#4a4a6a;--ink3:#8888aa;
+    --paper:#fafaf8;--surface:#ffffff;--surface2:#f4f3ef;
+    --accent:#2d6a4f;--accent2:#40916c;--accent3:#d8f3dc;
+    --gold:#b5891a;--goldb:#fdf3dc;
+    --danger:#c44b4b;--dangerb:#fdeaea;
+    --info:#2563eb;--infob:#eff6ff;
+    --border:#e2e2d8;--border2:#c8c8b8;
+    --radius:10px;--radius-lg:16px;
+    font-family:'DM Sans',sans-serif;
+  }
+  body{background:var(--paper);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.6}
+
+  nav{background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;position:sticky;top:0;z-index:100}
+  .nav-brand{font-family:'DM Serif Display',serif;font-size:22px;letter-spacing:-0.5px;color:#fff}
+  .nav-brand span{color:#74c69d}
+  .nav-tabs{display:flex;gap:4px}
+  .nav-tab{background:none;border:none;color:rgba(255,255,255,0.65);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .nav-tab:hover{color:#fff;background:rgba(255,255,255,.1)}
+  .nav-tab.active{color:#fff;background:rgba(255,255,255,.18)}
+  .nav-right{display:flex;align-items:center;gap:12px}
+  .nav-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;cursor:pointer}
+
+  .view{display:none;padding:2rem;max-width:1100px;margin:0 auto}
+  .view.active{display:block}
+
+  .hero{background:linear-gradient(135deg,var(--ink) 0%,#16213e 100%);color:#fff;border-radius:var(--radius-lg);padding:3rem;margin-bottom:2rem;position:relative;overflow:hidden}
+  .hero::after{content:'';position:absolute;right:-60px;top:-60px;width:280px;height:280px;border-radius:50%;background:rgba(74,198,152,.08);pointer-events:none}
+  .hero h1{font-family:'DM Serif Display',serif;font-size:38px;line-height:1.15;margin-bottom:.75rem}
+  .hero h1 em{color:#74c69d;font-style:normal}
+  .hero p{color:rgba(255,255,255,.7);max-width:480px;margin-bottom:1.5rem}
+  .hero-stats{display:flex;gap:2rem}
+  .hero-stat label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5);margin-bottom:2px}
+  .hero-stat span{font-size:24px;font-weight:600;color:#74c69d}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+  .card-body{padding:1.25rem}
+  .card-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+
+  .room-card{cursor:pointer;transition:transform .15s,box-shadow .15s;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+  .room-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.09)}
+  .room-img{height:150px;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative}
+  .room-img .room-badge{position:absolute;top:10px;right:10px;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500}
+  .badge-avail{background:#d8f3dc;color:#1b4332}
+  .badge-busy{background:#fdeaea;color:#7f1d1d}
+  .badge-pend{background:#fdf3dc;color:#78350f}
+  .room-info{padding:1rem}
+  .room-name{font-weight:600;font-size:15px;margin-bottom:3px}
+  .room-meta{font-size:12px;color:var(--ink3);display:flex;gap:10px;margin-bottom:.5rem}
+  .room-price{font-size:17px;font-weight:600;color:var(--accent)}
+  .room-price span{font-size:12px;font-weight:400;color:var(--ink3)}
+
+  .form-group{margin-bottom:1.1rem}
+  .form-group label{display:block;font-size:13px;font-weight:500;color:var(--ink2);margin-bottom:5px}
+  .form-group input,.form-group select,.form-group textarea{width:100%;border:1px solid var(--border2);border-radius:var(--radius);padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--surface);transition:border-color .15s}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent2)}
+  .form-group textarea{resize:vertical;min-height:80px}
+
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;transition:all .15s}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent2)}
+  .btn-secondary{background:var(--surface2);color:var(--ink);border:1px solid var(--border)}
+  .btn-secondary:hover{background:var(--border)}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-danger:hover{opacity:.85}
+  .btn-sm{padding:5px 12px;font-size:12px}
+  .btn-icon{background:none;border:none;cursor:pointer;padding:5px;border-radius:6px;color:var(--ink2);font-size:14px;transition:background .1s}
+  .btn-icon:hover{background:var(--surface2)}
+
+  .status{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+  .status-pending{background:#fdf3dc;color:#78350f}
+  .status-approved{background:#d8f3dc;color:#1b4332}
+  .status-rejected{background:#fdeaea;color:#7f1d1d}
+  .status-confirmed{background:#eff6ff;color:#1e40af}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;padding:10px 14px;background:var(--surface2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);border-bottom:1px solid var(--border)}
+  td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--paper)}
+
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+  .modal-bg.open{display:flex}
+  .modal{background:var(--surface);border-radius:var(--radius-lg);width:min(600px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
+  .modal-header h2{font-size:17px;font-weight:600}
+  .modal-body{padding:1.5rem}
+  .modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface)}
+
+  .metric{background:var(--surface2);border-radius:var(--radius);padding:1rem 1.25rem}
+  .metric label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:4px}
+  .metric .value{font-size:26px;font-weight:600;color:var(--ink)}
+
+  .timeline-slot{display:flex;gap:8px;align-items:center;padding:6px 10px;border-radius:8px;margin-bottom:4px;font-size:13px}
+  .slot-booked{background:var(--accent3);border-left:3px solid var(--accent)}
+  .slot-free{background:var(--surface2);border-left:3px solid var(--border2)}
+
+  .invoice-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem}
+  .invoice-title{font-family:'DM Serif Display',serif;font-size:32px;color:var(--accent)}
+  .invoice-table td:last-child,.invoice-table th:last-child{text-align:right}
+  .invoice-total{font-size:18px;font-weight:700;color:var(--accent)}
+
+  #toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:var(--radius);font-size:14px;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px}
+  #toast.show{transform:translateY(0);opacity:1}
+  #toast.toast-success{background:#1b4332}
+  #toast.toast-error{background:#7f1d1d}
+
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:.75rem}
+  .cal-day-label{text-align:center;font-size:10px;font-weight:600;color:var(--ink3);padding:4px 0;text-transform:uppercase}
+  .cal-day{text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid transparent;transition:all .15s;min-height:36px;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .cal-day:hover{background:var(--surface2)}
+  .cal-day.today{background:var(--accent3);color:var(--accent);font-weight:600}
+  .cal-day.has-booking::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent)}
+  .cal-day.selected{background:var(--accent);color:#fff}
+  .cal-day.other-month{color:var(--ink3);opacity:.4}
+
+  .amenity-tag{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 9px;font-size:11px;color:var(--ink2)}
+
+  .section-title{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:.25rem}
+  .section-sub{color:var(--ink3);font-size:13px;margin-bottom:1.5rem}
+
+  .divider{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+  .flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}
+  .gap-2{gap:.5rem}.gap-3{gap:.75rem}.mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}
+  .mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.text-sm{font-size:13px}.text-xs{font-size:11px}
+  .muted{color:var(--ink3)}.bold{font-weight:600}.accent-text{color:var(--accent)}.w-full{width:100%}
+
+  @media(max-width:680px){
+    .grid-3,.grid-4{grid-template-columns:1fr 1fr}
+    .grid-2{grid-template-columns:1fr}
+    .hero h1{font-size:26px}
+    .hero-stats{gap:1.5rem}
+    nav{padding:0 1rem}
+  }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<nav>
+  <div class="nav-brand">Common Rooms<span>Booking</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('home','user')">Rooms</button>
+    <button class="nav-tab" onclick="switchView('mybookings','user')">My Bookings</button>
+    <button class="nav-tab" id="manager-tab" onclick="switchView('manager','manager')" style="color:#74c69d">Manager</button>
+  </div>
+  <div class="nav-right">
+    <div style="font-size:12px;color:rgba(255,255,255,.6)" id="role-indicator">Viewing as: <strong style="color:#fff">User</strong></div>
+    <div class="nav-avatar" id="user-avatar" title="Switch role" onclick="toggleRole()">JS</div>
+  </div>
+</nav>
+
+<!-- HOME / ROOM BROWSE -->
+<div id="view-home" class="view active">
+  <div class="hero">
+    <h1>Book the perfect<br><em>space</em> for your team</h1>
+    <p>Browse and request meeting rooms, conference halls, and event venues — all in one place.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><label>Available Today</label><span id="avail-count">6</span></div>
+      <div class="hero-stat"><label>Total Rooms</label><span id="total-count">8</span></div>
+      <div class="hero-stat"><label>Bookings This Month</label><span id="month-count">24</span></div>
+    </div>
+  </div>
+  <div class="card mb-3" style="padding:1rem 1.25rem">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div class="form-group" style="margin:0;flex:1;min-width:160px"><label>Date</label><input type="date" id="filter-date"></div>
+      <div class="form-group" style="margin:0;flex:1;min-width:130px"><label>Capacity</label>
+        <select id="filter-cap"><option value="">Any size</option><option value="4">Up to 4</option><option value="10">Up to 10</option><option value="20">Up to 20</option><option value="50">Up to 50</option></select>
+      </div>
+      <div class="form-group" style="margin:0;flex:1;min-width:130px"><label>Type</label>
+        <select id="filter-type"><option value="">All types</option><option>Meeting Room</option><option>Conference Room</option><option>Event Hall</option><option>Board Room</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="filterRooms()">Search</button>
+      <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
+    </div>
+  </div>
+  <div id="rooms-grid" class="grid-3"></div>
+</div>
+
+<!-- MY BOOKINGS -->
+<div id="view-mybookings" class="view">
+  <div style="margin-bottom:1.5rem">
+    <div class="section-title">My Bookings</div>
+    <div class="section-sub">Track your reservation requests and their status</div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="bold">All Requests</span>
+      <select id="booking-filter-status" onchange="renderMyBookings()" style="font-size:13px;padding:5px 8px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--ink)">
+        <option value="">All statuses</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="confirmed">Confirmed</option>
+      </select>
+    </div>
+    <table>
+      <thead><tr><th>Room</th><th>Date &amp; Time</th><th>Duration</th><th>Purpose</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="my-bookings-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MANAGER VIEW -->
+<div id="view-manager" class="view">
+  <div style="margin-bottom:1.25rem">
+    <div class="section-title">Manager Dashboard</div>
+    <div class="section-sub">Manage rooms, approve bookings, and generate invoices</div>
+    <div class="grid-4 mt-2">
+      <div class="metric"><label>Pending Approvals</label><div class="value" id="m-pending">0</div></div>
+      <div class="metric"><label>Active Rooms</label><div class="value" id="m-rooms">0</div></div>
+      <div class="metric"><label>Monthly Revenue</label><div class="value" id="m-revenue">$0</div></div>
+      <div class="metric"><label>Total Bookings</label><div class="value" id="m-total">0</div></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:1.25rem;border-bottom:1px solid var(--border);padding-bottom:0">
+    <button class="nav-tab active" onclick="switchMgrTab('approvals')" id="mt-approvals" style="color:var(--ink);border-radius:8px 8px 0 0;border-bottom:2px solid var(--accent)">Pending Approvals</button>
+    <button class="nav-tab" onclick="switchMgrTab('rooms')" id="mt-rooms" style="color:var(--ink)">Room Management</button>
+    <button class="nav-tab" onclick="switchMgrTab('calendar')" id="mt-calendar" style="color:var(--ink)">Booking Calendar</button>
+    <button class="nav-tab" onclick="switchMgrTab('invoice')" id="mt-invoice" style="color:var(--ink)">Invoices</button>
+  </div>
+  <div id="mgt-approvals">
+    <div class="card">
+      <div class="card-header"><span class="bold">Booking Requests Awaiting Approval</span></div>
+      <table><thead><tr><th>Requester</th><th>Room Request</th><th>Date &amp; Time</th><th>Duration</th><th>Purpose</th><th>Actions</th></tr></thead><tbody id="approvals-tbody"></tbody></table>
+    </div>
+  </div>
+  <div id="mgt-rooms" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <span class="bold">All Rooms</span>
+      <button class="btn btn-primary" onclick="openRoomModal()">+ Add Room</button>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>Room</th><th>Type</th><th>Capacity</th><th>Rate/hr</th><th>Floor</th><th>Status</th><th>Actions</th></tr></thead><tbody id="rooms-admin-tbody"></tbody></table>
+    </div>
+  </div>
+  <div id="mgt-calendar" style="display:none">
+    <div class="grid-2" style="gap:1.5rem">
+      <div class="card card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+          <span class="bold" id="cal-month-label"></span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-secondary btn-sm" onclick="calNav(-1)">&#8592;</button>
+            <button class="btn btn-secondary btn-sm" onclick="calNav(1)">&#8594;</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="card card-body">
+        <div class="bold mb-2" id="cal-day-title">Select a day</div>
+        <div id="cal-day-bookings"></div>
+      </div>
+    </div>
+  </div>
+  <div id="mgt-invoice" style="display:none">
+    <div class="card card-body">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:1.25rem">
+        <div class="form-group" style="margin:0"><label>Month</label>
+          <select id="inv-month">
+            <option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option><option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option><option value="8">September</option><option value="9">October</option><option value="10">November</option><option value="11">December</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0"><label>Year</label><input type="number" id="inv-year" value="2025" style="width:100px"></div>
+        <div class="form-group" style="margin:0"><label>Requester</label><select id="inv-requester"><option value="">All requesters</option></select></div>
+        <button class="btn btn-primary" onclick="generateInvoice()">Generate Invoice</button>
+      </div>
+      <div id="invoice-output"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOK MODAL -->
+<div class="modal-bg" id="modal-book">
+  <div class="modal">
+    <div class="modal-header"><h2 id="modal-book-title">Request a Room</h2><button class="btn-icon" onclick="closeModal('modal-book')">&#x2715;</button></div>
+    <div class="modal-body">
+      <div id="room-detail-section" style="margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)"></div>
+      <form id="booking-form">
+        <div class="grid-2">
+          <div class="form-group"><label>Your Name *</label><input type="text" id="b-name" placeholder="Full name" required></div>
+          <div class="form-group"><label>Email *</label><input type="email" id="b-email" placeholder="your@email.com" required></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>Date *</label><input type="date" id="b-date" required></div>
+          <div class="form-group"><label>Start Time *</label><input type="time" id="b-time" value="09:00" required></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>Duration (hours) *</label>
+            <select id="b-duration"><option value="1">1 hour</option><option value="2">2 hours</option><option value="3">3 hours</option><option value="4">4 hours</option><option value="6">6 hours</option><option value="8">Full day (8h)</option></select>
+          </div>
+          <div class="form-group"><label>Attendees</label><input type="number" id="b-attendees" min="1" placeholder="Number of people"></div>
+        </div>
+        <div class="form-group"><label>Purpose / Meeting Title *</label><input type="text" id="b-purpose" placeholder="e.g. Q4 Strategy Review" required></div>
+        <div class="form-group"><label>Additional Notes</label><textarea id="b-notes" placeholder="Any special requirements, equipment needed, etc."></textarea></div>
+        <div class="card" style="background:var(--accent3);border-color:#74c69d20;border-radius:var(--radius)">
+          <div class="card-body" style="padding:.75rem 1rem">
+            <div style="font-size:13px;color:var(--accent);font-weight:500">Estimated Cost</div>
+            <div style="font-size:22px;font-weight:700;color:var(--accent)" id="cost-estimate">$0.00</div>
+            <div style="font-size:11px;color:var(--ink3)" id="cost-breakdown"></div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-book')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitBooking()">Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM ADMIN MODAL -->
+<div class="modal-bg" id="modal-room">
+  <div class="modal">
+    <div class="modal-header"><h2 id="modal-room-title">Add Room</h2><button class="btn-icon" onclick="closeModal('modal-room')">&#x2715;</button></div>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div class="form-group"><label>Room Name *</label><input type="text" id="r-name" placeholder="e.g. Boardroom Alpha"></div>
+        <div class="form-group"><label>Type *</label><select id="r-type"><option>Meeting Room</option><option>Conference Room</option><option>Board Room</option><option>Event Hall</option><option>Training Room</option></select></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Capacity *</label><input type="number" id="r-cap" min="1" placeholder="Max attendees"></div>
+        <div class="form-group"><label>Floor / Location</label><input type="text" id="r-floor" placeholder="e.g. Floor 3, Building A"></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Rate per Hour ($) *</label><input type="number" id="r-rate" min="0" step="5" placeholder="e.g. 75"></div>
+        <div class="form-group"><label>Status</label><select id="r-status"><option value="active">Active</option><option value="maintenance">Under Maintenance</option><option value="inactive">Inactive</option></select></div>
+      </div>
+      <div class="form-group"><label>Description</label><textarea id="r-desc" placeholder="Describe the room's features and ideal use cases..."></textarea></div>
+      <div class="form-group"><label>Amenities (comma-separated)</label><input type="text" id="r-amenities" placeholder="Projector, Whiteboard, Video Conferencing, Coffee Machine"></div>
+      <div class="form-group"><label>Icon (emoji)</label><input type="text" id="r-icon" placeholder="🏢" style="width:80px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-room')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRoom()">Save Room</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPROVE MODAL -->
+<div class="modal-bg" id="modal-approve">
+  <div class="modal">
+    <div class="modal-header"><h2>Review Booking Request</h2><button class="btn-icon" onclick="closeModal('modal-approve')">&#x2715;</button></div>
+    <div class="modal-body" id="approve-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-approve')">Close</button>
+      <button class="btn btn-danger" onclick="rejectBooking()">Reject</button>
+      <button class="btn btn-primary" onclick="approveBooking()">Approve &amp; Notify</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ICONS={'Meeting Room':'🤝','Conference Room':'🎯','Board Room':'👔','Event Hall':'🎪','Training Room':'📚'};
+const COLORS=['#e8f4ea','#fef3e2','#e8eefb','#fce8f0','#e8f8f8'];
+
+let state={
+  role:'user',
+  currentUser:{name:'Jordan Smith',email:'jordan.smith@acme.com',initials:'JS'},
+  rooms:[
+    {id:1,name:'Aurora Meeting Room',type:'Meeting Room',cap:8,floor:'Floor 2',rate:60,status:'active',desc:'A bright, modern room perfect for small team meetings.',amenities:['Projector','Whiteboard','Video Conferencing'],icon:'🤝',color:COLORS[0]},
+    {id:2,name:'Boardroom Orion',type:'Board Room',cap:16,floor:'Floor 5',rate:120,status:'active',desc:'Executive boardroom with panoramic city views.',amenities:['4K Display','Teleconference','Coffee Machine','Sound System'],icon:'👔',color:COLORS[1]},
+    {id:3,name:'Innovation Hub',type:'Conference Room',cap:20,floor:'Floor 3',rate:90,status:'active',desc:'Large collaborative space for presentations and workshops.',amenities:['Dual Projectors','Recording System','Whiteboard','Catering Setup'],icon:'🎯',color:COLORS[2]},
+    {id:4,name:'Summit Hall',type:'Event Hall',cap:50,floor:'Ground Floor',rate:200,status:'active',desc:'Grand event hall with stage and full AV setup.',amenities:['Stage','PA System','Lighting Rig','Catering Kitchen','Parking'],icon:'🎪',color:COLORS[3]},
+    {id:5,name:'Nebula Pod A',type:'Meeting Room',cap:4,floor:'Floor 1',rate:35,status:'active',desc:'Intimate pod for quick syncs and 1-on-1s.',amenities:['TV Screen','Whiteboard'],icon:'🤝',color:COLORS[4]},
+    {id:6,name:'Tech Training Room',type:'Training Room',cap:24,floor:'Floor 4',rate:110,status:'active',desc:'PC-equipped training room for workshops and courses.',amenities:['24 Workstations','Projector','Whiteboard','Recording'],icon:'📚',color:COLORS[0]},
+    {id:7,name:'Nebula Pod B',type:'Meeting Room',cap:4,floor:'Floor 1',rate:35,status:'maintenance',desc:'Currently under maintenance. Back online soon.',amenities:['TV Screen','Whiteboard'],icon:'🤝',color:COLORS[1]},
+    {id:8,name:'Sky Lounge',type:'Conference Room',cap:12,floor:'Floor 6',rate:140,status:'active',desc:'Rooftop conference room with terrace access.',amenities:['Panoramic Views','TV','Terrace','Refreshments'],icon:'🎯',color:COLORS[2]},
+  ],
+  bookings:[
+    {id:101,roomId:1,roomName:'Aurora Meeting Room',requester:'Jordan Smith',email:'jordan.smith@acme.com',date:'2025-04-14',time:'10:00',duration:2,attendees:6,purpose:'Q2 Planning Session',notes:'',status:'approved',rate:60},
+    {id:102,roomId:3,roomName:'Innovation Hub',requester:'Maya Rodriguez',email:'maya.r@acme.com',date:'2025-04-15',time:'14:00',duration:3,attendees:15,purpose:'Product Roadmap Review',notes:'Need recording system active',status:'pending',rate:90},
+    {id:103,roomId:2,roomName:'Boardroom Orion',requester:'Jordan Smith',email:'jordan.smith@acme.com',date:'2025-04-16',time:'09:00',duration:4,attendees:12,purpose:'Investor Presentation',notes:'Need coffee and water available',status:'pending',rate:120},
+    {id:104,roomId:4,roomName:'Summit Hall',requester:'Alex Chen',email:'alex.c@acme.com',date:'2025-04-18',time:'13:00',duration:8,attendees:40,purpose:'Annual Company Kickoff',notes:'Catering for 40 people',status:'confirmed',rate:200},
+    {id:105,roomId:6,roomName:'Tech Training Room',requester:'Sam Torres',email:'sam.t@acme.com',date:'2025-04-20',time:'09:00',duration:6,attendees:20,purpose:'DevOps Workshop',notes:'',status:'approved',rate:110},
+    {id:106,roomId:1,roomName:'Aurora Meeting Room',requester:'Maya Rodriguez',email:'maya.r@acme.com',date:'2025-04-22',time:'11:00',duration:2,attendees:5,purpose:'Sprint Retrospective',notes:'',status:'confirmed',rate:60},
+  ],
+  calMonth:new Date().getMonth(),calYear:new Date().getFullYear(),
+  editingRoomId:null,reviewBookingId:null,nextBookingId:200,nextRoomId:9,
+};
+
+function switchView(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  event.target.classList.add('active');
+  if(view==='home')renderRooms(state.rooms);
+  if(view==='mybookings')renderMyBookings();
+  if(view==='manager'){renderManagerDashboard();renderApprovals();}
+}
+
+function toggleRole(){
+  state.role=state.role==='user'?'manager':'user';
+  if(state.role==='manager'){
+    state.currentUser={name:'Alex Manager',email:'manager@acme.com',initials:'AM'};
+    document.getElementById('user-avatar').textContent='AM';
+    document.getElementById('role-indicator').innerHTML='Viewing as: <strong style="color:#74c69d">Manager</strong>';
+  }else{
+    state.currentUser={name:'Jordan Smith',email:'jordan.smith@acme.com',initials:'JS'};
+    document.getElementById('user-avatar').textContent='JS';
+    document.getElementById('role-indicator').innerHTML='Viewing as: <strong style="color:#fff">User</strong>';
+  }
+  toast('Switched to '+(state.role==='manager'?'Manager':'User')+' view');
+}
+
+function renderRooms(rooms){
+  const grid=document.getElementById('rooms-grid');
+  grid.innerHTML=rooms.map(r=>{
+    const busy=state.bookings.some(b=>b.roomId===r.id&&b.date===new Date().toISOString().split('T')[0]&&(b.status==='approved'||b.status==='confirmed'));
+    const avail=r.status==='active'&&!busy;
+    return`<div class="room-card" onclick="openBookModal(${r.id})">
+      <div class="room-img" style="background:${r.color};font-size:52px">${r.icon}
+        <span class="room-badge ${r.status!=='active'?'badge-busy':avail?'badge-avail':'badge-pend'}">${r.status!=='active'?r.status:avail?'Available':'Busy Today'}</span>
+      </div>
+      <div class="room-info">
+        <div class="room-name">${r.name}</div>
+        <div class="room-meta"><span>&#128101; ${r.cap} people</span><span>&#128205; ${r.floor}</span><span>${r.type}</span></div>
+        <div style="margin-bottom:.5rem;display:flex;flex-wrap:wrap;gap:4px">${r.amenities.slice(0,2).map(a=>`<span class="amenity-tag">${a}</span>`).join('')}${r.amenities.length>2?`<span class="amenity-tag">+${r.amenities.length-2}</span>`:''}</div>
+        <div class="room-price">$${r.rate}<span>/hour</span></div>
+      </div></div>`;
+  }).join('')||'<div style="color:var(--ink3);padding:2rem;text-align:center">No rooms match your filters.</div>';
+  document.getElementById('avail-count').textContent=state.rooms.filter(r=>r.status==='active').length;
+  document.getElementById('total-count').textContent=state.rooms.length;
+  document.getElementById('month-count').textContent=state.bookings.filter(b=>b.status!=='rejected').length;
+}
+
+function filterRooms(){
+  const cap=parseInt(document.getElementById('filter-cap').value)||999;
+  const type=document.getElementById('filter-type').value;
+  renderRooms(state.rooms.filter(r=>r.cap<=cap&&(!type||r.type===type)));
+}
+
+function clearFilters(){
+  document.getElementById('filter-cap').value='';
+  document.getElementById('filter-type').value='';
+  document.getElementById('filter-date').value='';
+  renderRooms(state.rooms);
+}
+
+let currentBookRoomId=null;
+
+function openBookModal(roomId){
+  const room=state.rooms.find(r=>r.id===roomId);
+  if(!room)return;
+  if(room.status!=='active'){toast('This room is not available for booking.','error');return;}
+  currentBookRoomId=roomId;
+  document.getElementById('modal-book-title').textContent='Request: '+room.name;
+  document.getElementById('b-name').value=state.currentUser.name;
+  document.getElementById('b-email').value=state.currentUser.email;
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('b-date').value=today;
+  document.getElementById('b-date').min=today;
+  document.getElementById('room-detail-section').innerHTML=`
+    <div style="display:flex;gap:1rem;align-items:center">
+      <div style="font-size:40px;width:64px;height:64px;background:${room.color};border-radius:12px;display:flex;align-items:center;justify-content:center">${room.icon}</div>
+      <div><div style="font-weight:600;font-size:15px">${room.name}</div>
+        <div style="font-size:13px;color:var(--ink3)">${room.type} &middot; ${room.floor} &middot; Max ${room.cap} people</div>
+        <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${room.amenities.map(a=>`<span class="amenity-tag">${a}</span>`).join('')}</div>
+      </div></div>`;
+  updateCostEstimate(room);
+  document.getElementById('b-duration').onchange=()=>updateCostEstimate(room);
+  openModal('modal-book');
+}
+
+function updateCostEstimate(room){
+  const hrs=parseInt(document.getElementById('b-duration').value)||1;
+  document.getElementById('cost-estimate').textContent='$'+(hrs*room.rate).toFixed(2);
+  document.getElementById('cost-breakdown').textContent=`${hrs}h × $${room.rate}/hr`;
+}
+
+function submitBooking(){
+  const name=document.getElementById('b-name').value.trim();
+  const email=document.getElementById('b-email').value.trim();
+  const date=document.getElementById('b-date').value;
+  const time=document.getElementById('b-time').value;
+  const duration=parseInt(document.getElementById('b-duration').value);
+  const attendees=parseInt(document.getElementById('b-attendees').value)||1;
+  const purpose=document.getElementById('b-purpose').value.trim();
+  const notes=document.getElementById('b-notes').value.trim();
+  if(!name||!email||!date||!purpose){toast('Please fill in all required fields.','error');return;}
+  const room=state.rooms.find(r=>r.id===currentBookRoomId);
+  state.bookings.push({id:state.nextBookingId++,roomId:room.id,roomName:room.name,requester:name,email,date,time,duration,attendees,purpose,notes,status:'pending',rate:room.rate});
+  closeModal('modal-book');
+  toast('Booking request submitted! Manager will review shortly.','success');
+  document.getElementById('b-purpose').value='';
+  document.getElementById('b-notes').value='';
+}
+
+function renderMyBookings(){
+  const sf=document.getElementById('booking-filter-status').value;
+  const mine=state.bookings.filter(b=>b.requester===state.currentUser.name&&(!sf||b.status===sf));
+  document.getElementById('my-bookings-tbody').innerHTML=mine.length?mine.map(b=>`
+    <tr><td><strong>${b.roomName}</strong></td><td>${formatDate(b.date)}<br><span class="text-xs muted">${b.time}</span></td>
+    <td>${b.duration}h</td><td>${b.purpose}</td>
+    <td><span class="status status-${b.status}">${capitalize(b.status)}</span></td>
+    <td><span class="muted text-xs">$${(b.duration*b.rate).toFixed(2)}</span></td></tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;color:var(--ink3);padding:2rem">No bookings found.</td></tr>';
+}
+
+function renderManagerDashboard(){
+  const pending=state.bookings.filter(b=>b.status==='pending').length;
+  const revenue=state.bookings.filter(b=>b.status!=='rejected'&&b.status!=='pending').reduce((s,b)=>s+b.duration*b.rate,0);
+  document.getElementById('m-pending').textContent=pending;
+  document.getElementById('m-rooms').textContent=state.rooms.filter(r=>r.status==='active').length;
+  document.getElementById('m-revenue').textContent='$'+revenue.toLocaleString();
+  document.getElementById('m-total').textContent=state.bookings.length;
+  const sel=document.getElementById('inv-requester');
+  const requesters=[...new Set(state.bookings.map(b=>b.requester))];
+  sel.innerHTML='<option value="">All requesters</option>'+requesters.map(r=>`<option>${r}</option>`).join('');
+}
+
+function renderApprovals(){
+  const pending=state.bookings.filter(b=>b.status==='pending');
+  document.getElementById('approvals-tbody').innerHTML=pending.length?pending.map(b=>`
+    <tr><td><strong>${b.requester}</strong><br><span class="text-xs muted">${b.email}</span></td>
+    <td>${b.roomName}</td><td>${formatDate(b.date)}<br><span class="text-xs muted">${b.time}</span></td>
+    <td>${b.duration}h</td><td>${b.purpose}</td>
+    <td style="display:flex;gap:6px;padding-top:11px"><button class="btn btn-sm btn-primary" onclick="openApproveModal(${b.id})">Review</button></td></tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;color:var(--ink3);padding:2rem">&#10003; No pending approvals</td></tr>';
+}
+
+function renderRoomsAdmin(){
+  document.getElementById('rooms-admin-tbody').innerHTML=state.rooms.map(r=>`
+    <tr><td><span style="margin-right:6px">${r.icon}</span><strong>${r.name}</strong></td>
+    <td>${r.type}</td><td>${r.cap}</td><td>$${r.rate}/hr</td><td>${r.floor}</td>
+    <td><span class="status ${r.status==='active'?'status-approved':r.status==='maintenance'?'status-pending':'status-rejected'}">${r.status}</span></td>
+    <td><button class="btn-icon" onclick="openRoomModal(${r.id})" title="Edit">&#9998;</button>
+    <button class="btn-icon" onclick="deleteRoom(${r.id})" title="Delete" style="color:var(--danger)">&#128465;</button></td></tr>`).join('');
+}
+
+function switchMgrTab(tab){
+  ['approvals','rooms','calendar','invoice'].forEach(t=>{
+    document.getElementById('mgt-'+t).style.display=t===tab?'':'none';
+    const btn=document.getElementById('mt-'+t);
+    if(btn){btn.style.borderBottom=t===tab?'2px solid var(--accent)':'';btn.style.fontWeight=t===tab?'600':'400';}
+  });
+  if(tab==='rooms')renderRoomsAdmin();
+  if(tab==='calendar')renderCalendar();
+  if(tab==='invoice')renderManagerDashboard();
+}
+
+function openApproveModal(bookingId){
+  state.reviewBookingId=bookingId;
+  const b=state.bookings.find(x=>x.id===bookingId);
+  const r=state.rooms.find(x=>x.id===b.roomId);
+  document.getElementById('approve-body').innerHTML=`
+    <div style="background:var(--surface2);border-radius:var(--radius);padding:1rem;margin-bottom:1rem">
+      <div class="bold mb-2">Booking Details</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem .75rem;font-size:13.5px">
+        <div><span class="muted">Requester:</span> <strong>${b.requester}</strong></div>
+        <div><span class="muted">Email:</span> ${b.email}</div>
+        <div><span class="muted">Room:</span> ${b.roomName}</div>
+        <div><span class="muted">Date:</span> ${formatDate(b.date)} at ${b.time}</div>
+        <div><span class="muted">Duration:</span> ${b.duration} hours</div>
+        <div><span class="muted">Attendees:</span> ${b.attendees}</div>
+        <div><span class="muted">Purpose:</span> ${b.purpose}</div>
+        <div><span class="muted">Total Cost:</span> <strong class="accent-text">$${(b.duration*b.rate).toFixed(2)}</strong></div>
+      </div>${b.notes?`<div style="margin-top:.75rem;font-size:13px"><span class="muted">Notes:</span> ${b.notes}</div>`:''}
+    </div>
+    ${r?`<div style="font-size:13px;color:var(--ink3);background:var(--accent3);border-radius:var(--radius);padding:.75rem 1rem">
+      Room capacity: ${r.cap} people &bull; Requested by ${b.attendees} attendees ${b.attendees>r.cap?'<strong style="color:var(--danger)">⚠ Exceeds capacity!</strong>':'&#10003; Within capacity'}
+    </div>`:''}
+    <div style="margin-top:1rem;font-size:13px;color:var(--ink2);background:var(--infob);border-radius:var(--radius);padding:.75rem 1rem">
+      &#9993; On approval, a confirmation email will be sent to <strong>${b.email}</strong>.
+    </div>`;
+  openModal('modal-approve');
+}
+
+function approveBooking(){
+  const b=state.bookings.find(x=>x.id===state.reviewBookingId);
+  if(b){b.status='confirmed';console.log(`📧 EMAIL → ${b.email}: Booking confirmed for ${b.roomName} on ${formatDate(b.date)} at ${b.time}`);}
+  closeModal('modal-approve');renderApprovals();renderManagerDashboard();
+  toast('Booking approved! Confirmation email sent to '+b.email,'success');
+}
+
+function rejectBooking(){
+  const b=state.bookings.find(x=>x.id===state.reviewBookingId);
+  if(b)b.status='rejected';
+  closeModal('modal-approve');renderApprovals();renderManagerDashboard();
+  toast('Booking rejected.','error');
+}
+
+function openRoomModal(roomId){
+  state.editingRoomId=roomId||null;
+  document.getElementById('modal-room-title').textContent=roomId?'Edit Room':'Add New Room';
+  if(roomId){
+    const r=state.rooms.find(x=>x.id===roomId);
+    document.getElementById('r-name').value=r.name;document.getElementById('r-type').value=r.type;
+    document.getElementById('r-cap').value=r.cap;document.getElementById('r-floor').value=r.floor;
+    document.getElementById('r-rate').value=r.rate;document.getElementById('r-status').value=r.status;
+    document.getElementById('r-desc').value=r.desc;document.getElementById('r-amenities').value=r.amenities.join(', ');
+    document.getElementById('r-icon').value=r.icon;
+  }else{
+    ['r-name','r-cap','r-floor','r-rate','r-desc','r-amenities'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('r-type').value='Meeting Room';document.getElementById('r-status').value='active';document.getElementById('r-icon').value='🏢';
+  }
+  openModal('modal-room');
+}
+
+function saveRoom(){
+  const name=document.getElementById('r-name').value.trim();
+  const cap=parseInt(document.getElementById('r-cap').value);
+  const rate=parseFloat(document.getElementById('r-rate').value);
+  if(!name||!cap||!rate){toast('Please fill in all required fields.','error');return;}
+  const roomData={name,type:document.getElementById('r-type').value,cap,floor:document.getElementById('r-floor').value||'TBD',rate,
+    status:document.getElementById('r-status').value,desc:document.getElementById('r-desc').value,
+    amenities:document.getElementById('r-amenities').value.split(',').map(s=>s.trim()).filter(Boolean),
+    icon:document.getElementById('r-icon').value||'🏢',color:COLORS[Math.floor(Math.random()*COLORS.length)]};
+  if(state.editingRoomId){
+    const idx=state.rooms.findIndex(r=>r.id===state.editingRoomId);
+    state.rooms[idx]={...state.rooms[idx],...roomData};toast('Room updated successfully.','success');
+  }else{
+    state.rooms.push({id:state.nextRoomId++,...roomData});toast('Room added successfully.','success');
+  }
+  closeModal('modal-room');renderRoomsAdmin();renderManagerDashboard();
+}
+
+function deleteRoom(roomId){
+  if(!confirm('Delete this room? This cannot be undone.'))return;
+  state.rooms=state.rooms.filter(r=>r.id!==roomId);
+  renderRoomsAdmin();renderManagerDashboard();toast('Room removed.','error');
+}
+
+function renderCalendar(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent=`${months[state.calMonth]} ${state.calYear}`;
+  const firstDay=new Date(state.calYear,state.calMonth,1).getDay();
+  const daysInMonth=new Date(state.calYear,state.calMonth+1,0).getDate();
+  const today=new Date();
+  const bookingDates=state.bookings.map(b=>b.date);
+  let html=['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="cal-day-label">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++)html+=`<div class="cal-day other-month"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${state.calYear}-${String(state.calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=d===today.getDate()&&state.calMonth===today.getMonth()&&state.calYear===today.getFullYear();
+    const hasBooking=bookingDates.includes(dateStr);
+    html+=`<div class="cal-day${isToday?' today':''}${hasBooking?' has-booking':''}" onclick="showDayBookings('${dateStr}',${d})">${d}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+}
+
+function calNav(dir){
+  state.calMonth+=dir;
+  if(state.calMonth<0){state.calMonth=11;state.calYear--;}
+  if(state.calMonth>11){state.calMonth=0;state.calYear++;}
+  renderCalendar();
+}
+
+function showDayBookings(dateStr){
+  const dayBookings=state.bookings.filter(b=>b.date===dateStr);
+  document.getElementById('cal-day-title').textContent=formatDate(dateStr);
+  document.getElementById('cal-day-bookings').innerHTML=dayBookings.length
+    ?dayBookings.map(b=>`<div class="timeline-slot ${b.status==='pending'?'slot-free':'slot-booked'}">
+        <div style="flex:1"><strong>${b.time}</strong> – ${b.roomName}<br><span class="text-xs muted">${b.requester} &middot; ${b.duration}h &middot; ${b.purpose}</span></div>
+        <span class="status status-${b.status}">${capitalize(b.status)}</span></div>`).join('')
+    :'<div class="text-sm muted" style="padding:.75rem 0">No bookings on this day.</div>';
+}
+
+function generateInvoice(){
+  const month=parseInt(document.getElementById('inv-month').value);
+  const year=parseInt(document.getElementById('inv-year').value);
+  const requester=document.getElementById('inv-requester').value;
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const filtered=state.bookings.filter(b=>{
+    const d=new Date(b.date);
+    return d.getMonth()===month&&d.getFullYear()===year&&(b.status==='confirmed'||b.status==='approved')&&(!requester||b.requester===requester);
+  });
+  if(!filtered.length){document.getElementById('invoice-output').innerHTML='<div style="color:var(--ink3);text-align:center;padding:2rem">No confirmed bookings found for this period.</div>';return;}
+  const total=filtered.reduce((s,b)=>s+b.duration*b.rate,0);
+  const invoiceNum='INV-'+year+String(month+1).padStart(2,'0')+'-'+Math.floor(Math.random()*900+100);
+  document.getElementById('invoice-output').innerHTML=`
+    <div style="border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;background:var(--surface)">
+      <div class="invoice-header">
+        <div><div class="invoice-title">Invoice</div><div class="text-sm muted">${invoiceNum}</div><div class="text-sm muted">Period: ${months[month]} ${year}</div></div>
+        <div style="text-align:right"><div class="bold" style="font-size:15px">SpaceBook Facilities</div><div class="text-sm muted">facilities@acme.com</div><div class="text-sm muted">Generated: ${new Date().toLocaleDateString()}</div></div>
+      </div>
+      ${requester?`<div style="margin-bottom:1.25rem;padding:.75rem 1rem;background:var(--surface2);border-radius:var(--radius)"><div class="text-xs muted">Bill To</div><div class="bold">${requester}</div></div>`:''}
+      <table class="invoice-table" style="margin-bottom:1.5rem">
+        <thead><tr><th>Room</th><th>Date</th><th>Time</th><th>Hrs</th><th>Rate</th><th>Amount</th></tr></thead>
+        <tbody>${filtered.map(b=>`<tr><td>${b.roomName}</td><td>${formatDate(b.date)}</td><td>${b.time}</td><td>${b.duration}</td><td>$${b.rate}/hr</td><td style="text-align:right;font-weight:500">$${(b.duration*b.rate).toFixed(2)}</td></tr>`).join('')}</tbody>
+        <tfoot>
+          <tr><td colspan="4"></td><td style="font-weight:600;border-top:1px solid var(--border);padding-top:10px">Subtotal</td><td style="text-align:right;border-top:1px solid var(--border);padding-top:10px;font-weight:600">$${total.toFixed(2)}</td></tr>
+          <tr><td colspan="4"></td><td style="color:var(--ink3);font-size:13px">Tax (0%)</td><td style="text-align:right;color:var(--ink3);font-size:13px">$0.00</td></tr>
+          <tr><td colspan="4"></td><td class="invoice-total" style="padding-top:8px">Total Due</td><td class="invoice-total" style="text-align:right;padding-top:8px">$${total.toFixed(2)}</td></tr>
+        </tfoot>
+      </table>
+      <div style="font-size:12px;color:var(--ink3);border-top:1px solid var(--border);padding-top:1rem">Payment due within 30 days. Thank you for using SpaceBook Facilities.</div>
+    </div>
+    <div style="margin-top:.75rem"><button class="btn btn-secondary btn-sm" onclick="window.print()">&#128438; Print / Export PDF</button></div>`;
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function formatDate(dateStr){if(!dateStr)return'';const d=new Date(dateStr+'T00:00:00');return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});}
+function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+let toastTimer;
+function toast(msg,type=''){
+  const el=document.getElementById('toast');el.textContent=msg;
+  el.className='show'+(type?' toast-'+type:'');clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{el.className='';},3500);
+}
+
+document.querySelectorAll('.modal-bg').forEach(bg=>{bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');});});
+
+document.getElementById('filter-date').value=new Date().toISOString().split('T')[0];
+document.getElementById('inv-month').value=new Date().getMonth();
+renderRooms(state.rooms);
+</script>
+</body>
+</html>
